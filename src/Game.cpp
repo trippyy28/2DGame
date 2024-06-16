@@ -112,19 +112,26 @@ void Game::sUserInput()
             if (event.key.code == sf::Keyboard::W)
             {
                 m_player->cInput->up = false;
-                std::cout << "W key released" << std::endl;
+                if (m_player->cTransform->pos.y < 35)
+                    m_player->cTransform->pos.y = 35;
             }
             if (event.key.code == sf::Keyboard::A)
             {
                 m_player->cInput->left = false;
+                if (m_player->cTransform->pos.x < 35)
+                    m_player->cTransform->pos.x = 35;
             }
             if (event.key.code == sf::Keyboard::S)
             {
                 m_player->cInput->down = false;
+                if (m_player->cTransform->pos.y > m_window.getSize().y - 35)
+                    m_player->cTransform->pos.y = m_window.getSize().y - 35;
             }
             if (event.key.code == sf::Keyboard::D)
             {
                 m_player->cInput->right = false;
+                if (m_player->cTransform->pos.x > m_window.getSize().x - 35)
+                    m_player->cTransform->pos.x = m_window.getSize().x - 35;
             }
             if (event.key.code == sf::Keyboard::Space)
             {
@@ -139,18 +146,27 @@ void Game::sUserInput()
         if (m_player->cInput->up)
         {
             m_player->cTransform->pos.y -= m_playerConfig.S;
+            if (m_player->cTransform->pos.y < 35)
+                m_player->cTransform->pos.y = 35;
         }
         if (m_player->cInput->down)
         {
             m_player->cTransform->pos.y += m_playerConfig.S;
+            if (m_player->cTransform->pos.y > m_window.getSize().y - 35)
+                m_player->cTransform->pos.y = m_window.getSize().y - 35;
         }
         if (m_player->cInput->left)
         {
             m_player->cTransform->pos.x -= m_playerConfig.S;
+            if (m_player->cTransform->pos.x < 35)
+                m_player->cTransform->pos.x = 35;
         }
         if (m_player->cInput->right)
         {
+
             m_player->cTransform->pos.x += m_playerConfig.S;
+            if (m_player->cTransform->pos.x > m_window.getSize().x - 35)
+                m_player->cTransform->pos.x = m_window.getSize().x - 35;
         }
         if (m_player->cInput->shot)
         {
@@ -293,6 +309,7 @@ void Game::sRender()
     {
         m_player->cShape->circle.setPosition(m_player->cTransform->pos.x, m_player->cTransform->pos.y);
         m_window.draw(m_player->cShape->circle);
+        std::cout << "Player position: " << m_player->cTransform->pos.x << ", " << m_player->cTransform->pos.y << std::endl;
     }
 
     // Display configuration data
