@@ -39,6 +39,11 @@ void Game::init(const std::string &path)
             iss >> m_playerConfig.SR >> m_playerConfig.CR >> m_playerConfig.FR >> m_playerConfig.FG >> m_playerConfig.FB >> m_playerConfig.OR >> m_playerConfig.OG >> m_playerConfig.OB >> m_playerConfig.OT >> m_playerConfig.V >> m_playerConfig.S;
         }
 
+        if (key == "Bullet")
+        {
+            iss >> m_bulletConfig.SR >> m_bulletConfig.CR >> m_bulletConfig.FR >> m_bulletConfig.FG >> m_bulletConfig.FB >> m_bulletConfig.OR >> m_bulletConfig.OG >> m_bulletConfig.OB >> m_bulletConfig.OT >> m_bulletConfig.V >> m_bulletConfig.L >> m_bulletConfig.S;
+        }
+
         // Load the font from the config file path
 
         if (!m_font.loadFromFile("/users/trippyy28/Desktop/2DGame/src/font.ttf"))
@@ -92,7 +97,6 @@ void Game::sUserInput()
             if (event.key.code == sf::Keyboard::A)
             {
                 m_player->cInput->left = true;
-                std::cout << "A key pressed" << std::endl;
             }
             if (event.key.code == sf::Keyboard::S)
             {
@@ -101,10 +105,6 @@ void Game::sUserInput()
             if (event.key.code == sf::Keyboard::D)
             {
                 m_player->cInput->right = true;
-            }
-            if (event.key.code == sf::Keyboard::Space)
-            {
-                m_player->cInput->shot = true;
             }
         }
         if (event.type == sf::Event::KeyReleased)
@@ -133,10 +133,18 @@ void Game::sUserInput()
                 if (m_player->cTransform->pos.x > m_window.getSize().x - 35)
                     m_player->cTransform->pos.x = m_window.getSize().x - 35;
             }
-            if (event.key.code == sf::Keyboard::Space)
-            {
-                m_player->cInput->shot = false;
-            }
+        }
+        if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+        {
+            m_player->cInput->shot = true;
+            sf::Vector2i mousePos = sf::Mouse::getPosition(m_window);
+            spawnBullet(m_player, Vec2(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)));
+            std::cout << "Mouse position: " << mousePos.x << ", " << mousePos.y << std::endl;
+            std::cout << m_entities.getEntities("bullet").size() << std::endl;
+        }
+        if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+        {
+            m_player->cInput->shot = false;
         }
     }
 
@@ -182,7 +190,7 @@ void Game::spawnPlayer()
 
     if (entity)
     {
-        entity->cTransform = std::make_shared<CTransform>(Vec2(200, 200), Vec2(1.0f, 1.0f), 0.0f);
+        entity->cTransform = std::make_shared<CTransform>(Vec2(200, 200), Vec2(0.0f, 0.0f), 0.0f);
         entity->cShape = std::make_shared<CShape>(32.0f, 8, sf::Color(10, 0, 0), sf::Color(255, 0, 0), 4.0f);
         entity->cInput = std::make_shared<CInput>();
         m_player = entity;
@@ -219,10 +227,12 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &mousePos)
         bullet->cTransform = std::make_shared<CTransform>(entity->cTransform->pos, direction * m_bulletConfig.S, 0.0f);
         bullet->cShape = std::make_shared<CShape>(m_bulletConfig.SR, 10, sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB), sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), m_bulletConfig.OT);
         bullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
-
-        // Add collider if needed
-        bullet->cCollider = std::make_shared<CCollider>(m_bulletConfig.CR);
     }
+    // std::cout << "Bullet spawned!" << std::endl;
+    // std::cout << mousePos.x << " " << mousePos.y << std::endl;
+    // std::cout << bullet->cTransform->pos.x << " " << bullet->cTransform->pos.y << std::endl;
+    // /// is shot = true
+    // std::cout << m_player->cInput->shot << "shot" << std::endl;
 }
 
 void Game::spawnEnemy()
@@ -285,6 +295,8 @@ void Game::sMovement()
         {
             e->cTransform->pos += e->cTransform->vel;
         }
+        // print the velocity of the enemy
+        std::cout << e->cTransform->vel.x << "velooo " << e->cTransform->vel.y << std::endl;
     }
 }
 
@@ -309,19 +321,31 @@ void Game::sRender()
     {
         m_player->cShape->circle.setPosition(m_player->cTransform->pos.x, m_player->cTransform->pos.y);
         m_window.draw(m_player->cShape->circle);
-        std::cout << "Player position: " << m_player->cTransform->pos.x << ", " << m_player->cTransform->pos.y << std::endl;
     }
 
-    // Display configuration data
-    // std::ostringstream oss;
-    // oss << "Window: 800x600\n"
-    //     << "Player: SR=32, CR=32, V=8, S=5\n"
-    //     << "Enemy: SR=32, CR=32, VMIN=2, VMAX=3\n"
-    //     << "Bullet: SR=10, CR=10, V=20\n";
+    // Draw the bullet
+    // Draw all bullets
+    for (auto &e : m_entities.getEntities("bullet"))
+    {
+        if (e && e->cShape && e->cTransform)
+        {
+            e->cShape->circle.setPosition(e->cTransform->pos.x, e->cTransform->pos.y);
+            m_window.draw(e->cShape->circle);
+        }
+    }
 
-    // m_text.setString(oss.str());
-    // m_text.setPosition(10, 10); // Adjust position as needed
+    // Draw the score or other text if needed
     m_window.draw(m_text);
 
     m_window.display();
 }
+
+// Display configuration data
+// std::ostringstream oss;
+// oss << "Window: 800x600\n"
+//     << "Player: SR=32, CR=32, V=8, S=5\n"
+//     << "Enemy: SR=32, CR=32, VMIN=2, VMAX=3\n"
+//     << "Bullet: SR=10, CR=10, V=20\n";
+
+// m_text.setString(oss.str());
+// m_text.setPosition(10, 10); // Adjust position as needed

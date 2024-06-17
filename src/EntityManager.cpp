@@ -1,19 +1,23 @@
 #include "EntityManager.h"
-
+#include "Entity.h"
 EntityManager::EntityManager()
 {
 }
 
 void EntityManager::update()
 {
-    // TODO: add entities from m_entitedToAdd to the proper location(s)
-    // - add them to the vector of all entities
-    // - add them to the vector inside the map, with the tag as a key
+    // Add new entities to the main list
+    for (auto &entity : m_entitiesToAdd)
+    {
+        m_entities.push_back(entity);
+        m_entityMap[entity->tag()].push_back(entity);
+    }
+    m_entitiesToAdd.clear(); // Clear the temporary list
 
-    // remove dead entities from the vector of all entities
+    // Remove dead entities from the main list
     removeDeadEntities(m_entities);
 
-    // remove dead entities from each vector in the entity map
+    // Remove dead entities from the map
     for (auto &[tag, entityVec] : m_entityMap)
     {
         removeDeadEntities(entityVec);
@@ -22,7 +26,10 @@ void EntityManager::update()
 
 void EntityManager::removeDeadEntities(EntityVec &vec)
 {
-    // TODO: Implement logic to remove dead entities
+    vec.erase(std::remove_if(vec.begin(), vec.end(),
+                             [](const std::shared_ptr<Entity> &entity)
+                             { return !entity->IsActive(); }),
+              vec.end());
 }
 
 std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
@@ -30,7 +37,7 @@ std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
     // create a new entity with the next available ID
     auto entity = std::shared_ptr<Entity>(new Entity(m_totalEntities++, tag));
 
-    m_entitedToAdd.push_back(entity);
+    m_entitiesToAdd.push_back(entity);
 
     return entity;
 }
