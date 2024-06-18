@@ -191,7 +191,7 @@ void Game::spawnPlayer()
     if (entity)
     {
         entity->cTransform = std::make_shared<CTransform>(Vec2(200, 200), Vec2(0.0f, 0.0f), 0.0f);
-        entity->cShape = std::make_shared<CShape>(32.0f, 8, sf::Color(10, 0, 0), sf::Color(255, 0, 0), 4.0f);
+        entity->cShape = std::make_shared<CShape>(32.0f, 8, sf::Color(120, 130, 140), sf::Color(255, 22, 33), 4.0f);
         entity->cInput = std::make_shared<CInput>();
         m_player = entity;
     }
@@ -199,15 +199,6 @@ void Game::spawnPlayer()
     {
         std::cerr << "Failed to add player entity!" << std::endl;
     }
-}
-
-void Game::sCollision()
-{
-    // TODO: Implement collision detection logic here
-    // Example:
-    // - Check for collisions between player and enemies
-    // - Check for collisions between bullets and enemies
-    // - Handle collisions appropriately
 }
 
 void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &mousePos)
@@ -245,13 +236,54 @@ void Game::spawnEnemy()
         float ex = rand() % m_window.getSize().x;
         float ey = rand() % m_window.getSize().y;
 
-        entity->cTransform = std::make_shared<CTransform>(Vec2(ex, ey), Vec2(0.0f, 0.0f), 0.0f);
+        entity->cTransform = std::make_shared<CTransform>(Vec2(ex, ey), Vec2(1.0f, 1.0f), 0.0f);
         entity->cShape = std::make_shared<CShape>(16.0f, 3, sf::Color(10, 10, 10), sf::Color(255, 0, 0), 4.0f);
         m_lastEnemySpawnTime = m_currentFrame;
     }
     else
     {
         std::cerr << "Failed to add enemy entity!" << std::endl;
+    }
+}
+void Game::sCollision()
+{
+    // Check for collisions between player and enemies and bullets
+    for (auto &e : m_entities.getEntities("enemy"))
+    {
+        if (e && m_player && e->cTransform && m_player->cTransform)
+        {
+            float dx = e->cTransform->pos.x - m_player->cTransform->pos.x;
+            float dy = e->cTransform->pos.y - m_player->cTransform->pos.y;
+            float distance = std::sqrt(dx * dx + dy * dy);
+            if (distance < 32.0f)
+            {
+                m_player->cTransform->pos = Vec2(200, 200);
+                m_score = 0;
+            }
+        }
+    }
+
+    // Check for collisions between bullets and enemies
+    for (auto &bullet : m_entities.getEntities("bullet"))
+    {
+        if (bullet && bullet->cTransform)
+        {
+            for (auto &enemy : m_entities.getEntities("enemy"))
+            {
+                if (enemy && enemy->cTransform)
+                {
+                    float dx = enemy->cTransform->pos.x - bullet->cTransform->pos.x;
+                    float dy = enemy->cTransform->pos.y - bullet->cTransform->pos.y;
+                    float distance = std::sqrt(dx * dx + dy * dy);
+                    if (distance < 16.0f)
+                    {
+                        enemy->cTransform->pos = Vec2(rand() % m_window.getSize().x, rand() % m_window.getSize().y);
+                        bullet->cLifespan->remaining = 0;
+                        m_score++;
+                    }
+                }
+            }
+        }
     }
 }
 
