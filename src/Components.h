@@ -18,7 +18,8 @@ class CShape
 {
 public:
     sf::CircleShape circle;
-    CShape(float radius, int points, const sf::Color &fill, const sf::Color &outline, float thickness)
+    float angle = 0.0;
+    CShape(float radius, int points, const sf::Color &fill, const sf::Color &outline, float thickness, float angle)
         : circle(radius, points)
     {
 
@@ -26,6 +27,7 @@ public:
         circle.setOutlineColor(outline);
         circle.setOutlineThickness(thickness);
         circle.setOrigin(radius, radius);
+        circle.setRotation(angle);
     }
 };
 

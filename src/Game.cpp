@@ -72,7 +72,18 @@ void Game::run()
         sRender();
 
         m_currentFrame++;
+
+        if (m_player->cShape->angle < 360)
+        {
+            m_player->cShape->angle++;
+        }
+        else
+        {
+            m_player->cShape->angle = 0;
+        }
     }
+    sf::Time time = clock.restart();
+    deltaTime = time.asSeconds();
 }
 
 void Game::sUserInput()
@@ -191,7 +202,7 @@ void Game::spawnPlayer()
     if (entity)
     {
         entity->cTransform = std::make_shared<CTransform>(Vec2(200, 200), Vec2(0.0f, 0.0f), 0.0f);
-        entity->cShape = std::make_shared<CShape>(32.0f, 8, sf::Color(120, 130, 140), sf::Color(255, 22, 33), 4.0f);
+        entity->cShape = std::make_shared<CShape>(32.0f, 8, sf::Color(120, 130, 140), sf::Color(204, 255, 204), 4.0f, 1.0f);
         entity->cInput = std::make_shared<CInput>();
         m_player = entity;
     }
@@ -216,7 +227,7 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &mousePos)
             direction.y /= magnitude;
         }
         bullet->cTransform = std::make_shared<CTransform>(entity->cTransform->pos, direction * m_bulletConfig.S, 0.0f);
-        bullet->cShape = std::make_shared<CShape>(m_bulletConfig.SR, 10, sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB), sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), m_bulletConfig.OT);
+        bullet->cShape = std::make_shared<CShape>(m_bulletConfig.SR, 10, sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB), sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), m_bulletConfig.OT, 0.0f);
         bullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
     }
     // std::cout << "Bullet spawned!" << std::endl;
@@ -237,7 +248,7 @@ void Game::spawnEnemy()
         float ey = rand() % m_window.getSize().y;
 
         entity->cTransform = std::make_shared<CTransform>(Vec2(ex, ey), Vec2(1.0f, 1.0f), 0.0f);
-        entity->cShape = std::make_shared<CShape>(16.0f, 3, sf::Color(10, 10, 10), sf::Color(255, 0, 0), 4.0f);
+        entity->cShape = std::make_shared<CShape>(16.0f, 3, sf::Color(10, 10, 10), sf::Color(255, 0, 0), 4.0f, 0.0f);
         m_lastEnemySpawnTime = m_currentFrame;
     }
     else
@@ -300,6 +311,7 @@ void Game::sEnemySpawner()
 void Game::sMovement()
 {
     // Update player position based on input
+
     if (m_player && m_player->cInput)
     {
         if (m_player->cInput->up)
@@ -312,11 +324,12 @@ void Game::sMovement()
         }
         if (m_player->cInput->left)
         {
-            m_player->cTransform->pos.x -= m_playerConfig.S;
+            m_player->cTransform->pos.x -= m_playerConfig.S * deltaTime; // Move smoothly based on time
+                                                                         // Rotate smoothly based on time
         }
         if (m_player->cInput->right)
         {
-            m_player->cTransform->pos.x += m_playerConfig.S;
+            m_player->cTransform->pos.x += m_playerConfig.S * deltaTime; // Move smoothly based on time
         }
     }
 
@@ -329,6 +342,17 @@ void Game::sMovement()
         }
         // print the velocity of the enemy
         std::cout << e->cTransform->vel.x << "velooo " << e->cTransform->vel.y << std::endl;
+    }
+    if (m_player && m_player->cShape)
+    {
+        // Define rotation speed (degrees per frame)
+
+        // Update the player's rotation angle
+
+        m_player->cShape->angle *deltaTime;
+
+        // Ensure the angle stays within a 0-360 range to avoid overflow
+        std::cout << m_player->cShape->angle << "angle" << std::endl;
     }
 }
 
@@ -352,6 +376,7 @@ void Game::sRender()
     if (m_player && m_player->cShape && m_player->cTransform)
     {
         m_player->cShape->circle.setPosition(m_player->cTransform->pos.x, m_player->cTransform->pos.y);
+        m_player->cShape->circle.setRotation(m_player->cShape->angle);
         m_window.draw(m_player->cShape->circle);
     }
 
@@ -366,8 +391,15 @@ void Game::sRender()
         }
     }
 
+    // ADD MUSIC
+    // if (!m_music.openFromFile("/users/trippyy28/Desktop/2DGame/src/Untitled.wav"))
+    // {
+    //     std::cerr << "Failed to load music file!" << std::endl;
+    // }
+    // m_music.play();
     // Draw the score or other text if needed
     m_window.draw(m_text);
+    m_window.setFramerateLimit(60);
 
     m_window.display();
 }

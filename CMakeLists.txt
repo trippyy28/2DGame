@@ -11,7 +11,7 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 add_executable(2DGame src/main.cpp src/Vec2.cpp src/Entity.cpp src/EntityManager.cpp src/Game.cpp)
-target_link_libraries(2DGame PRIVATE sfml-graphics)
+target_link_libraries(2DGame PRIVATE sfml-graphics sfml-audio)
 target_compile_features(2DGame PRIVATE cxx_std_17)
 
 if(WIN32)
