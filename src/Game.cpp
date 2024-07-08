@@ -46,7 +46,7 @@ void Game::init(const std::string &path)
 
         // Load the font from the config file path
 
-        if (!m_font.loadFromFile("/users/trippyy28/Desktop/2DGame/src/font.ttf"))
+        if (!m_font.loadFromFile("/users/trippyy28/Desktop/2DGame/src/Arial.ttf"))
         {
             std::cerr << "Failed to load font: " << std::endl;
         }
@@ -247,8 +247,12 @@ void Game::spawnEnemy()
         float ex = rand() % m_window.getSize().x;
         float ey = rand() % m_window.getSize().y;
 
+        int minSides = 3;
+        int maxSides = 10;
+        int sides = rand() % (maxSides - minSides + 1) + minSides;
+
         entity->cTransform = std::make_shared<CTransform>(Vec2(ex, ey), Vec2(1.0f, 1.0f), 0.0f);
-        entity->cShape = std::make_shared<CShape>(16.0f, 3, sf::Color(10, 10, 10), sf::Color(255, 0, 0), 4.0f, 0.0f);
+        entity->cShape = std::make_shared<CShape>(32.0f, sides, sf::Color(255, 255, 255), sf::Color(102, 255, 255), 4.0f, 0.0f);
         m_lastEnemySpawnTime = m_currentFrame;
     }
     else
@@ -398,9 +402,12 @@ void Game::sRender()
     // }
     // m_music.play();
     // Draw the score or other text if needed
+    m_text.setString("Score " + std::to_string(m_score));
     m_window.draw(m_text);
     m_window.setFramerateLimit(60);
 
+    // print the score to the console
+    std::cout << m_score << std::endl;
     m_window.display();
 }
 
